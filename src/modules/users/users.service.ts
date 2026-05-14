@@ -17,38 +17,38 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   async createUser(createUserDto: CreateUserDto) {
-  const existingUser =
-    await this.usersRepository.findUserByEmail(
-      createUserDto.email,
+    const existingUser =
+      await this.usersRepository.findUserByEmail(
+        createUserDto.email,
+      );
+
+    if (existingUser) {
+      throw new BadRequestException(
+        'Email already exists',
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(
+      createUserDto.password,
+      10,
     );
 
-  if (existingUser) {
-    throw new BadRequestException(
-      'Email already exists',
+    const user =
+      await this.usersRepository.createUser({
+        ...createUserDto,
+        password: hashedPassword,
+      });
+
+    await this.mailService.sendWelcomeEmail(
+      user.email,
+      user.name,
     );
+
+    return user;
   }
-
-  const hashedPassword = await bcrypt.hash(
-    createUserDto.password,
-    10,
-  );
-
-  const user =
-    await this.usersRepository.createUser({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
-  await this.mailService.sendWelcomeEmail(
-    user.email,
-    user.name,
-  );
-
-  return user;
-}
 
   async findAllUsers(
     page = 1,
@@ -101,14 +101,14 @@ export class UsersService {
   }
 
   async updateUserAvatar(
-  userId: string,
-  avatar: string,
-) {
-  await this.findUserById(userId);
+    userId: string,
+    avatar: string,
+  ) {
+    await this.findUserById(userId);
 
-  return this.usersRepository.updateUserAvatar(
-    userId,
-    avatar,
-  );
-}
+    return this.usersRepository.updateUserAvatar(
+      userId,
+      avatar,
+    );
+  }
 }

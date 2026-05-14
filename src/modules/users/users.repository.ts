@@ -8,7 +8,7 @@ import { UpdateUserDto } from './update-user.dto';
 
 @Injectable()
 export class UsersRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createUser(data: CreateUserDto) {
     return this.prisma.user.create({
@@ -37,21 +37,21 @@ export class UsersRepository {
 
     const where = search
       ? {
-          OR: [
-            {
-              name: {
-                contains: search,
-                mode: 'insensitive' as const,
-              },
+        OR: [
+          {
+            name: {
+              contains: search,
+              mode: 'insensitive' as const,
             },
-            {
-              email: {
-                contains: search,
-                mode: 'insensitive' as const,
-              },
+          },
+          {
+            email: {
+              contains: search,
+              mode: 'insensitive' as const,
             },
-          ],
-        }
+          },
+        ],
+      }
       : {};
 
     const [users, total] = await Promise.all([
@@ -105,17 +105,17 @@ export class UsersRepository {
   }
 
   async updateUserAvatar(
-  userId: string,
-  avatar: string,
-) {
-  return this.prisma.user.update({
-    where: {
-      id: userId,
-    },
+    userId: string,
+    avatar: string,
+  ) {
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
 
-    data: {
-      avatar,
-    },
-  });
-}
+      data: {
+        avatar,
+      },
+    });
+  }
 }
